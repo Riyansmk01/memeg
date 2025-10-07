@@ -12,6 +12,8 @@ const users: Array<{
   name: string
   password: string
   image?: string
+  createdAt: Date
+  lastLoginAt?: Date
 }> = []
 
 export const authOptions: NextAuthOptions = {
@@ -55,6 +57,9 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
+        // Update last login
+        user.lastLoginAt = new Date()
+
         return {
           id: user.id,
           email: user.email,
@@ -65,7 +70,8 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/auth/signin",
@@ -75,16 +81,24 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.email = user.email
+        token.name = user.name
+        token.image = user.image
       }
       return token
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
+        session.user.email = token.email as string
+        session.user.name = token.name as string
+        session.user.image = token.image as string
       }
       return session
     },
   },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 }
 
 // Export users array for registration
