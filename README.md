@@ -1,188 +1,250 @@
 # eSawitKu - Platform SaaS Kelapa Sawit
 
-Platform SaaS terdepan untuk manajemen perkebunan kelapa sawit dengan teknologi modern dan fitur lengkap.
+Platform SaaS terdepan untuk manajemen perkebunan kelapa sawit dengan fitur lengkap dan teknologi terbaru.
 
-## 🚀 Fitur Utama
+## 🚀 Features
 
-- **Homepage Interaktif** dengan animasi floating dan informasi lengkap
-- **Sistem Autentikasi** dengan Google, GitHub, Facebook, dan Email
-- **Dashboard User** dengan statistik real-time dan quick actions
-- **Sistem Pembayaran** dengan transfer bank dan QR code
-- **Manajemen Langganan** dengan berbagai paket (Free, Basic, Premium, Enterprise)
-- **Pengaturan User** yang komprehensif
-- **Responsive Design** dengan Tailwind CSS
-- **Animasi Smooth** dengan Framer Motion
+### ✨ UI/UX Features
+- **Beautiful Animations**: Smooth transitions dan micro-interactions
+- **Responsive Design**: Mobile-first approach dengan breakpoints yang optimal
+- **Modern UI Components**: Reusable components dengan variants lengkap
+- **Loading States**: Comprehensive loading indicators dan skeleton screens
+- **Error Boundaries**: Graceful error handling dengan user-friendly messages
+- **Accessibility**: WCAG compliant dengan keyboard navigation
 
-## 🛠️ Teknologi yang Digunakan
+### 🔒 Security Features
+- **Input Validation**: Client dan server-side validation
+- **Password Security**: bcrypt hashing dengan salt rounds
+- **XSS Protection**: Input sanitization dan CSP headers
+- **CSRF Protection**: SameSite cookies dan CSRF tokens
+- **Security Headers**: Comprehensive security headers
+- **Rate Limiting**: Ready untuk implementasi rate limiting
 
-- **Frontend**: Next.js 14, React 18, TypeScript
+### 🎨 Animation System
+- **20+ Animation Classes**: Fade, slide, scale, rotate, bounce, float, pulse, glow
+- **Page Transitions**: Smooth transitions antar halaman
+- **Hover Effects**: Interactive hover states
+- **Loading Animations**: Spinner, skeleton, pulse, shimmer effects
+- **Micro-interactions**: Button clicks, form interactions
+
+### 🧩 Component Library
+- **Button Component**: 7 variants (primary, secondary, ghost, danger, success, warning, info)
+- **Input Component**: 4 variants dengan validation states
+- **Card Component**: 5 variants (default, elevated, flat, glass, gradient)
+- **Badge Component**: 6 variants dengan animations
+- **Alert Component**: 4 variants dengan closable option
+- **Progress Component**: 5 variants dengan animated progress
+- **Divider Component**: Horizontal/vertical dengan text support
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Animasi**: Framer Motion
-- **Database**: Prisma dengan SQLite
-- **Autentikasi**: NextAuth.js
-- **Pembayaran**: QR Code generation
+- **Animations**: Framer Motion
+- **Authentication**: NextAuth.js
+- **Database**: Prisma ORM (SQLite for development)
+- **Forms**: React Hook Form
+- **Notifications**: React Hot Toast
 - **Icons**: Lucide React
 
-## 📦 Instalasi
+## 📦 Installation
 
-1. **Clone repository**
-   ```bash
-   git clone <repository-url>
-   cd esawitku-saas
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Setup environment variables**
-   ```bash
-   cp env.example .env.local
-   ```
-   
-   Edit `.env.local` dan isi dengan konfigurasi yang sesuai:
-   - NextAuth secret key
-   - OAuth provider credentials (Google, GitHub, Facebook)
-   - Database URL
-
-4. **Setup database**
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
-
-5. **Jalankan development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Buka browser**
-   ```
-   http://localhost:3000
-   ```
-
-## 🔧 Konfigurasi OAuth Providers
-
-### Google OAuth
-1. Buka [Google Cloud Console](https://console.cloud.google.com/)
-2. Buat project baru atau pilih project existing
-3. Enable Google+ API
-4. Buat OAuth 2.0 credentials
-5. Tambahkan `http://localhost:3000/api/auth/callback/google` ke authorized redirect URIs
-
-### GitHub OAuth
-1. Buka [GitHub Developer Settings](https://github.com/settings/developers)
-2. Buat OAuth App baru
-3. Set Authorization callback URL ke `http://localhost:3000/api/auth/callback/github`
-
-### Facebook OAuth
-1. Buka [Facebook Developers](https://developers.facebook.com/)
-2. Buat app baru
-3. Tambahkan Facebook Login product
-4. Set Valid OAuth Redirect URIs ke `http://localhost:3000/api/auth/callback/facebook`
-
-## 📱 Struktur Aplikasi
-
-```
-app/
-├── api/                    # API routes
-│   ├── auth/              # NextAuth configuration
-│   ├── payment/           # Payment processing
-│   └── user/              # User management
-├── auth/                  # Authentication pages
-│   ├── signin/           # Login page
-│   └── signup/           # Registration page
-├── dashboard/            # User dashboard
-│   ├── billing/          # Payment & subscription
-│   └── settings/         # User settings
-├── globals.css           # Global styles
-├── layout.tsx            # Root layout
-├── page.tsx              # Homepage
-└── providers.tsx         # Context providers
-
-lib/
-├── auth.ts               # NextAuth configuration
-└── prisma.ts            # Database client
-
-prisma/
-└── schema.prisma         # Database schema
+1. Clone repository:
+```bash
+git clone <repository-url>
+cd esawitku-saas
 ```
 
-## 🎨 Fitur UI/UX
+2. Install dependencies:
+```bash
+npm install
+```
 
-- **Floating Animations**: Logo dan elemen bergerak dengan animasi smooth
-- **Responsive Design**: Optimal di desktop, tablet, dan mobile
-- **Modern UI**: Clean design dengan Tailwind CSS
-- **Interactive Elements**: Hover effects dan transitions
-- **Loading States**: Feedback visual untuk semua aksi
-- **Toast Notifications**: Notifikasi real-time dengan react-hot-toast
+3. Setup environment variables:
+```bash
+cp .env.example .env.local
+```
 
-## 💳 Sistem Pembayaran
+4. Run development server:
+```bash
+npm run dev
+```
 
-- **Transfer Bank**: BCA, Mandiri, BNI, BRI, dan bank lainnya
-- **QR Code**: Generate QR code untuk pembayaran mobile
-- **E-Wallet**: GoPay, OVO, DANA, LinkAja
-- **Kartu Kredit**: Visa, Mastercard, JCB
+## 🎯 Quick Start
 
-## 📊 Paket Langganan
+### Option 1: Automated Setup
+```bash
+.\final-test.bat
+```
 
-| Paket | Harga | Fitur |
-|-------|-------|-------|
-| **Free** | Rp 0/bulan | Dashboard dasar, 5 hektar, laporan bulanan |
-| **Basic** | Rp 299.000/bulan | Dashboard lengkap, 50 hektar, laporan mingguan |
-| **Premium** | Rp 599.000/bulan | Semua fitur Basic, 200 hektar, laporan real-time |
-| **Enterprise** | Custom | Solusi khusus, unlimited, dedicated support |
+### Option 2: Manual Setup
+```bash
+npm install
+npm run dev
+```
 
-## 🔐 Keamanan
+## 📁 Project Structure
 
-- Password hashing dengan bcrypt
-- JWT tokens untuk session management
-- CSRF protection dengan NextAuth
-- Input validation dan sanitization
-- Secure API routes dengan authentication
+```
+esawitku-saas/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # Dashboard pages
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Homepage
+├── components/            # Reusable components
+│   ├── ui/               # UI components
+│   ├── ErrorBoundary.tsx # Error boundary
+│   ├── LoadingComponents.tsx
+│   ├── PageTransitions.tsx
+│   └── AnimationUtils.tsx
+├── lib/                   # Utility functions
+│   ├── auth.ts           # NextAuth configuration
+│   ├── prisma.ts         # Prisma client
+│   └── utils.ts          # Utility functions
+├── prisma/               # Database schema
+└── public/               # Static assets
+```
+
+## 🎨 CSS System
+
+### Color Palette
+- **Primary**: Green shades (#f0fdf4 to #14532d)
+- **Secondary**: Gray shades (#f8fafc to #020617)
+- **Accent**: Purple shades (#fef7ff to #520a6b)
+- **Success**: Green shades
+- **Warning**: Yellow shades
+- **Error**: Red shades
+- **Info**: Blue shades
+
+### Animation Classes
+- `fade-in`, `fade-in-up`, `fade-in-down`
+- `slide-in-left`, `slide-in-right`, `slide-in-up`, `slide-in-down`
+- `scale-in`, `scale-in-bounce`
+- `rotate-in`, `bounce-gentle`, `float`
+- `pulse-glow`, `shimmer`, `gradient-shift`
+
+### Component Classes
+- `btn-primary`, `btn-secondary`, `btn-ghost`
+- `card`, `card-hover`, `glass-card`
+- `input-field`, `input-error`, `input-success`
+- `badge-green`, `badge-blue`, `badge-purple`
+
+## 🔧 Development
+
+### Available Scripts
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run type-check   # Run TypeScript check
+```
+
+### Environment Variables
+```env
+DATABASE_URL="file:./dev.db"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_ID="your-github-id"
+GITHUB_SECRET="your-github-secret"
+FACEBOOK_CLIENT_ID="your-facebook-client-id"
+FACEBOOK_CLIENT_SECRET="your-facebook-client-secret"
+```
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
-1. Push code ke GitHub
-2. Connect repository ke Vercel
-3. Set environment variables di Vercel dashboard
-4. Deploy otomatis
-
-### Manual Deployment
-1. Build aplikasi: `npm run build`
-2. Start production server: `npm start`
-3. Setup database di production
-4. Configure environment variables
-
-## 📝 Scripts
-
+### Docker Deployment
 ```bash
-npm run dev          # Development server
-npm run build        # Build untuk production
-npm run start        # Start production server
-npm run lint         # ESLint checking
+docker build -t esawitku-saas .
+docker run -p 3000:3000 esawitku-saas
 ```
 
-## 🤝 Kontribusi
+### Vercel Deployment
+```bash
+npm install -g vercel
+vercel --prod
+```
+
+## 📱 Responsive Design
+
+- **Mobile**: < 768px
+- **Tablet**: 768px - 1024px
+- **Desktop**: > 1024px
+- **Large Desktop**: > 1600px
+
+## ♿ Accessibility
+
+- **Keyboard Navigation**: Full keyboard support
+- **Screen Reader**: ARIA labels dan semantic HTML
+- **Color Contrast**: WCAG AA compliant
+- **Reduced Motion**: Respects user preferences
+- **Focus Indicators**: Clear focus states
+
+## 🔒 Security
+
+- **Input Validation**: Client dan server-side
+- **Password Hashing**: bcrypt dengan salt rounds
+- **XSS Protection**: Input sanitization
+- **CSRF Protection**: SameSite cookies
+- **Security Headers**: Comprehensive headers
+- **Rate Limiting**: Ready untuk implementasi
+
+## 📊 Performance
+
+- **Bundle Size**: Optimized dengan tree shaking
+- **Image Optimization**: Next.js Image component
+- **Code Splitting**: Automatic code splitting
+- **Caching**: Static generation dan ISR
+- **Animations**: Hardware accelerated
+
+## 🧪 Testing
+
+```bash
+npm run test          # Run unit tests
+npm run test:e2e      # Run end-to-end tests
+npm run test:performance # Run performance tests
+```
+
+## 📈 Monitoring
+
+- **Error Tracking**: Error boundaries
+- **Performance**: Web Vitals monitoring
+- **Analytics**: Ready untuk Google Analytics
+- **Logging**: Structured logging
+
+## 🤝 Contributing
 
 1. Fork repository
-2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Create Pull Request
 
-## 📄 Lisensi
+## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+MIT License - see LICENSE file for details
 
-## 📞 Kontak
+## 🆘 Support
 
+- **Documentation**: [Link to docs]
+- **Issues**: [GitHub Issues]
+- **Discord**: [Discord Server]
 - **Email**: support@esawitku.com
-- **Website**: https://esawitku.com
-- **LinkedIn**: [eSawitKu](https://linkedin.com/company/esawitku)
+
+## 🎉 Acknowledgments
+
+- Next.js team untuk framework yang luar biasa
+- Tailwind CSS untuk utility-first CSS
+- Framer Motion untuk animasi yang smooth
+- Lucide untuk icon set yang comprehensive
+- Prisma untuk ORM yang powerful
 
 ---
 
-Dibuat dengan ❤️ untuk industri kelapa sawit Indonesia
+**eSawitKu** - Platform SaaS Kelapa Sawit Terdepan di Indonesia 🇮🇩

@@ -11,7 +11,7 @@ export default function HomePage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
   const { scrollYProgress } = useScroll()
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%'])
+  // const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']) // Unused for now
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {

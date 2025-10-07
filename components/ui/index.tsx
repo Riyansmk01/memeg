@@ -4,10 +4,7 @@ import { motion } from 'framer-motion'
 import { ReactNode, ButtonHTMLAttributes, InputHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
-// Utility function untuk class names
-export function cn(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(' ')
-}
+// Utility function sudah diimport dari @/lib/utils
 
 // Button Component dengan semua variant
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

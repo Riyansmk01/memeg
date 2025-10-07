@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   BarChart3, 
   Users, 
@@ -11,17 +11,10 @@ import {
   CreditCard, 
   LogOut, 
   TrendingUp, 
-  Calendar,
   MapPin,
-  Leaf,
   DollarSign,
   Bell,
   ChevronRight,
-  Plus,
-  Activity,
-  Zap,
-  Shield,
-  Star,
   ArrowUpRight,
   ArrowDownRight,
   Eye,

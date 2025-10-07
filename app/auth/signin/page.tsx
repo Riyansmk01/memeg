@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Github, Mail, Facebook, Eye, EyeOff, ArrowLeft, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Github, Mail, Facebook, Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 
