@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esawitku-app
+  labels:
+    app: esawitku-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: esawitku-app
+  template:
+    metadata:
+      labels:
+        app: esawitku-app
+    spec:
+      containers:
+      - name: esawitku-app
+        image: esawitku-saas:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: esawitku-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: esawitku-secrets
+              key: redis-url
+        - name: MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: esawitku-secrets
+              key: mongodb-url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+        - name: logs
+          mountPath: /app/logs
+        - name: backups
+          mountPath: /app/backups
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: esawitku-uploads-pvc
+      - name: logs
+        persistentVolumeClaim:
+          claimName: esawitku-logs-pvc
+      - name: backups
+        persistentVolumeClaim:
+          claimName: esawitku-backups-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: esawitku-app-service
+spec:
+  selector:
+    app: esawitku-app
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: esawitku-secrets
+type: Opaque
+data:
+  database-url: cG9zdGdyZXNxbDovL2VzYXdpdGt1OnBhc3N3b3JkQHBvc3RncmVzOjU0MzIvZXNhd2l0a3U=
+  redis-url: cmVkaXM6Ly9yZWRpczozNjM5
+  mongodb-url: bW9uZ29kYjovL21vbmdvZGI6MjcwMTcvZXNhd2l0a3U=
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: esawitku-uploads-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: esawitku-logs-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: esawitku-backups-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: esawitku-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: esawitku-app
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
