@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { users } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
+    const existingUser = users.find(u => u.email === email)
 
     if (existingUser) {
       return NextResponse.json(
@@ -26,26 +24,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password,
-      }
-    })
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create free subscription for new user
-    await prisma.subscription.create({
-      data: {
-        userId: user.id,
-        plan: 'free',
-        status: 'active'
-      }
-    })
+    // Create user
+    const newUser = {
+      id: Date.now().toString(),
+      name,
+      email,
+      password: hashedPassword,
+      image: null
+    }
+
+    users.push(newUser)
 
     return NextResponse.json(
-      { message: 'Akun berhasil dibuat', userId: user.id },
+      { message: 'Akun berhasil dibuat', userId: newUser.id },
       { status: 201 }
     )
   } catch (error) {

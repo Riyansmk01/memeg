@@ -1,30 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { withApiAuth, ApiResponse } from '@/lib/api-middleware'
-import { UserCache } from '@/lib/cache'
-import { MetricsCollector } from '@/lib/monitoring'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
-// Enhanced user stats API with caching and monitoring
-export const GET = withApiAuth(
-  async (request: NextRequest, { user }) => {
-    try {
-      MetricsCollector.startTimer('user_stats_api')
-      
-      // Get cached stats or fetch from database
-      const stats = await UserCache.getUserStats(user.id)
-      
-      MetricsCollector.endTimer('user_stats_api')
-      MetricsCollector.increment('api_user_stats_success')
-      
-      return ApiResponse.success(stats, 'User stats retrieved successfully')
-    } catch (error) {
-      MetricsCollector.increment('api_user_stats_error')
-      console.error('User stats API error:', error)
-      return ApiResponse.serverError('Failed to retrieve user stats')
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
-  },
-  {
-    requiredPermissions: ['read'],
-    rateLimit: true,
-    auditLog: true
+
+    // Mock data for demo purposes
+    const stats = {
+      totalHectares: 25,
+      totalWorkers: 8,
+      monthlyRevenue: 15000000,
+      productivity: 85
+    }
+
+    return NextResponse.json(stats)
+  } catch (error) {
+    console.error('Error fetching user stats:', error)
+    return NextResponse.json(
+      { message: 'Internal server error' },
+      { status: 500 }
+    )
   }
-)
+}

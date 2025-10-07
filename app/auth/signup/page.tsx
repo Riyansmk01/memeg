@@ -7,7 +7,6 @@ import { motion } from 'framer-motion'
 import { Github, Mail, Facebook, Eye, EyeOff, ArrowLeft, User, Lock } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import bcrypt from 'bcryptjs'
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -44,8 +43,6 @@ export default function SignUpPage() {
     setIsLoading(true)
 
     try {
-      const hashedPassword = await bcrypt.hash(formData.password, 12)
-      
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -54,7 +51,7 @@ export default function SignUpPage() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          password: hashedPassword,
+          password: formData.password,
         }),
       })
 

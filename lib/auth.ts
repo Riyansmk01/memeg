@@ -3,24 +3,30 @@ import GoogleProvider from "next-auth/providers/google"
 import GitHubProvider from "next-auth/providers/github"
 import FacebookProvider from "next-auth/providers/facebook"
 import CredentialsProvider from "next-auth/providers/credentials"
-// import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+// Temporary user storage (in production, use database)
+const users: Array<{
+  id: string
+  email: string
+  name: string
+  password: string
+  image?: string
+}> = []
+
 export const authOptions: NextAuthOptions = {
-  // adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || "dummy",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "dummy",
     }),
     GitHubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
+      clientId: process.env.GITHUB_ID || "dummy",
+      clientSecret: process.env.GITHUB_SECRET || "dummy",
     }),
     FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID!,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+      clientId: process.env.FACEBOOK_CLIENT_ID || "dummy",
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "dummy",
     }),
     CredentialsProvider({
       name: "credentials",
@@ -33,13 +39,10 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
-        })
+        // Find user in temporary storage
+        const user = users.find(u => u.email === credentials.email)
 
-        if (!user || !user.password) {
+        if (!user) {
           return null
         }
 
@@ -83,3 +86,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
 }
+
+// Export users array for registration
+export { users }
