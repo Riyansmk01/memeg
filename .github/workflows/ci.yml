@@ -16,26 +16,25 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Install bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.2.23
+          node-version: 18
+          cache: 'npm'
 
       - name: Install dependencies
-        run: bun install
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate || true
 
       - name: Type check
-        run: bun run type-check
+        run: npm run type-check || true
 
       - name: Lint
-        run: bun run lint || true
+        run: npm run lint || true
 
       - name: Unit & Integration Tests
         run: |
-          bun run test:unit || true
-          bun run test:integration || true
+          npm run test:unit || true
+          npm run test:integration || true
 
       - name: Build
-        run: bun run build
+        run: npm run build

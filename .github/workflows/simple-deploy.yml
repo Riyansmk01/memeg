@@ -1,10 +1,9 @@
-name: Deploy to Vercel
+name: Simple Deploy
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -28,22 +27,8 @@ jobs:
       
     - name: Build application
       run: npm run build
-      env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-        NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-        
+      
     - name: Deploy to Vercel
-      if: github.ref == 'refs/heads/main'
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.ORG_ID }}
-        vercel-project-id: ${{ secrets.PROJECT_ID }}
-        vercel-args: '--prod'
-        
-    - name: Preview Deploy to Vercel
-      if: github.event_name == 'pull_request'
       uses: amondnet/vercel-action@v25
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
