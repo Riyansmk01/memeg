@@ -16,11 +16,19 @@ export const metadata: Metadata = {
   authors: [{ name: 'eSawitKu Team' }],
   viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
+  metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://esawitku.vercel.app'),
   openGraph: {
     title: 'eSawitKu - Platform SaaS Kelapa Sawit Terdepan',
     description: 'Platform SaaS terdepan untuk manajemen perkebunan kelapa sawit',
     type: 'website',
     locale: 'id_ID',
+    url: process.env.NEXTAUTH_URL || 'https://esawitku.vercel.app',
+    siteName: 'eSawitKu',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'eSawitKu - Platform SaaS Kelapa Sawit Terdepan',
+    description: 'Platform SaaS terdepan untuk manajemen perkebunan kelapa sawit',
   },
 }
 
