@@ -51,6 +51,8 @@ model User {
   documents     Document[]
   tasks         Task[]
   teams         TeamMember[]
+  
+  // Extended Relations (will be added later)
 
   @@index([email])
   @@index([createdAt])

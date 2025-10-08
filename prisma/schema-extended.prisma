@@ -1,0 +1,273 @@
+// Extended Schema for Complete SaaS Features
+// This file contains additional models for the complete SaaS system
+
+// Role Management
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions String   // JSON array of permissions
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  id     String @id @default(cuid())
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+// Password Reset & Email Verification
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+  @@map("password_resets")
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+  @@map("email_verifications")
+}
+
+// File Storage System
+model FileUpload {
+  id          String   @id @default(cuid())
+  userId      String
+  fileName    String
+  originalName String
+  fileSize    Int
+  mimeType    String
+  fileUrl     String
+  filePath    String
+  category    String   // 'document', 'image', 'certificate', 'report'
+  tags        String?  // JSON array of tags
+  isPublic    Boolean  @default(false)
+  metadata    String?  // JSON metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isPublic])
+  @@map("file_uploads")
+}
+
+// Email Templates & Notifications
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  subject     String
+  body        String   // HTML template
+  variables   String?  // JSON array of available variables
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  emails EmailLog[]
+
+  @@map("email_templates")
+}
+
+model EmailLog {
+  id          String   @id @default(cuid())
+  templateId  String?
+  to          String
+  subject     String
+  body        String
+  status      String   // 'pending', 'sent', 'failed', 'bounced'
+  errorMessage String?
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  template EmailTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([to])
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_logs")
+}
+
+// Analytics & Metrics
+model UserAnalytics {
+  id          String   @id @default(cuid())
+  userId      String
+  event       String   // 'login', 'logout', 'page_view', 'action'
+  properties  String?  // JSON properties
+  sessionId   String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([event])
+  @@index([createdAt])
+  @@map("user_analytics")
+}
+
+// System Metrics
+model SystemMetrics {
+  id          String   @id @default(cuid())
+  metric      String   // 'active_users', 'total_revenue', 'api_calls'
+  value       Float
+  metadata    String?  // JSON metadata
+  timestamp   DateTime @default(now())
+
+  @@index([metric])
+  @@index([timestamp])
+  @@map("system_metrics")
+}
+
+// Customer Support System
+model SupportTicket {
+  id          String   @id @default(cuid())
+  userId      String
+  subject     String
+  description String
+  priority    String   @default("medium") // 'low', 'medium', 'high', 'urgent'
+  status      String   @default("open")   // 'open', 'in_progress', 'resolved', 'closed'
+  category    String   // 'technical', 'billing', 'feature_request', 'bug'
+  assignedTo  String?
+  resolution  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resolvedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages SupportMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  userId    String
+  message   String
+  isInternal Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([createdAt])
+  @@map("support_messages")
+}
+
+// API Rate Limiting
+model ApiRateLimit {
+  id          String   @id @default(cuid())
+  userId      String?
+  ipAddress   String?
+  endpoint    String
+  requests    Int      @default(1)
+  windowStart DateTime @default(now())
+  windowEnd   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([endpoint])
+  @@index([windowStart])
+  @@map("api_rate_limits")
+}
+
+// System Logs
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   // 'info', 'warn', 'error', 'debug'
+  message   String
+  context   String?  // JSON context
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([level])
+  @@index([createdAt])
+  @@map("system_logs")
+}
+
+// Feature Flags
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isEnabled   Boolean  @default(false)
+  conditions  String?  // JSON conditions for when to enable
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+// Webhooks
+model Webhook {
+  id          String   @id @default(cuid())
+  userId      String
+  url         String
+  events      String   // JSON array of events to listen for
+  secret      String
+  isActive    Boolean  @default(true)
+  lastTriggered DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs WebhookLog[]
+
+  @@index([userId])
+  @@index([isActive])
+  @@map("webhooks")
+}
+
+model WebhookLog {
+  id        String   @id @default(cuid())
+  webhookId String
+  event     String
+  payload   String   // JSON payload
+  response  String?  // JSON response
+  status    Int      // HTTP status code
+  duration  Int?     // Response time in ms
+  createdAt DateTime @default(now())
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([createdAt])
+  @@map("webhook_logs")
+}
