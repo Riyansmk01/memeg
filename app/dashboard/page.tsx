@@ -167,12 +167,14 @@ export default function DashboardPage() {
   const planLimits = {
     free: { hectares: 5, workers: 3, reports: 'monthly' },
     basic: { hectares: 50, workers: 15, reports: 'weekly' },
-    premium: { hectares: 200, workers: 50, reports: 'daily' },
-    enterprise: { hectares: -1, workers: -1, reports: 'real-time' }
+    premium: { hectares: 200, workers: 50, reports: 'daily' }
   }
 
-  const currentPlan = subscription?.plan || 'free'
+  const currentPlan = (subscription?.plan || 'free').toLowerCase()
   const limits = planLimits[currentPlan as keyof typeof planLimits]
+  const isFree = currentPlan === 'free'
+  const isBasic = currentPlan === 'basic'
+  const isPremium = currentPlan === 'premium'
 
   const quickActions = [
     {
@@ -317,7 +319,7 @@ export default function DashboardPage() {
             whileHover={{ scale: 1.02 }}
             className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 text-white mb-8"
           >
-            <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-semibold mb-2">
                   Paket {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
@@ -326,15 +328,23 @@ export default function DashboardPage() {
                   {limits.hectares === -1 ? 'Kebun tanpa batas' : `Hingga ${limits.hectares} hektar`} • 
                   {limits.workers === -1 ? ' Tim tanpa batas' : ` Hingga ${limits.workers} pekerja`}
                 </p>
+                  {isFree && (
+                    <p className="mt-1 text-primary-100/90 text-sm">Beberapa fitur terkunci di paket Free. Upgrade untuk membuka semua fitur.</p>
+                  )}
+                  {isBasic && (
+                    <p className="mt-1 text-primary-100/90 text-sm">Anda menggunakan paket Basic. Upgrade ke Premium untuk laporan real-time & API access.</p>
+                  )}
               </div>
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <Link href="/dashboard/billing" aria-label="Buka halaman upgrade paket" className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                  Upgrade
-                  <ArrowUpRight className="w-4 h-4 ml-2" aria-hidden="true" />
-                </Link>
+                  {(isFree || isBasic) && (
+                    <Link href="/dashboard/billing" aria-label="Buka halaman upgrade paket" className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                      Upgrade
+                      <ArrowUpRight className="w-4 h-4 ml-2" aria-hidden="true" />
+                    </Link>
+                  )}
               </motion.div>
             </div>
           </motion.div>
@@ -347,7 +357,7 @@ export default function DashboardPage() {
           animate="visible"
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
         >
-          {[
+          {[ 
             { 
               title: 'Total Hektar', 
               value: `${stats.totalHectares} ha`, 
@@ -368,7 +378,7 @@ export default function DashboardPage() {
             },
             { 
               title: 'Pendapatan Bulanan', 
-              value: `Rp ${stats.monthlyRevenue.toLocaleString()}`, 
+              value: isFree ? 'Terkunci' : `Rp ${stats.monthlyRevenue.toLocaleString()}`, 
               icon: DollarSign, 
               color: 'from-purple-500 to-purple-600',
               change: '+8%',
@@ -377,7 +387,7 @@ export default function DashboardPage() {
             },
             { 
               title: 'Produktivitas', 
-              value: `${stats.productivity}%`, 
+              value: isFree ? 'Terkunci' : `${stats.productivity}%`, 
               icon: TrendingUp, 
               color: 'from-yellow-500 to-yellow-600',
               change: '+3%',
@@ -424,10 +434,13 @@ export default function DashboardPage() {
                     {stat.change}
                   </motion.div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors duration-300">
+                <h3 className={`text-2xl font-bold mb-1 transition-colors duration-300 ${isFree && (stat.title === 'Pendapatan Bulanan' || stat.title === 'Produktivitas') ? 'text-gray-400' : 'text-gray-900 group-hover:text-primary-600'}`}>
                   {stat.value}
                 </h3>
                 <p className="text-gray-600">{stat.title}</p>
+                {isFree && (stat.title === 'Pendapatan Bulanan' || stat.title === 'Produktivitas') && (
+                  <p className="mt-2 text-sm text-gray-500">Tersedia di paket Basic/Premium</p>
+                )}
               </motion.div>
             )
           })}
@@ -446,6 +459,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {quickActions.map((action, index) => {
               const Icon = action.icon
+              const locked = isFree && (action.title === 'Lihat Laporan' || action.title === 'Kelola Tim')
               return (
                 <motion.div
                   key={index}
@@ -453,7 +467,7 @@ export default function DashboardPage() {
                   whileHover="hover"
                   className="card group cursor-pointer"
                 >
-                  <Link href={action.href} aria-label={`Buka ${action.title}`} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md">
+                  <Link href={locked ? '/dashboard/billing' : action.href} aria-label={`Buka ${action.title}`} className={`block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md ${locked ? 'opacity-60' : ''}`}>
                     <motion.div
                       className={`w-16 h-16 bg-gradient-to-r ${action.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}
                       animate={{ rotate: [0, 5, -5, 0] }}
@@ -470,7 +484,7 @@ export default function DashboardPage() {
                       initial={{ opacity: 0 }}
                       whileHover={{ x: 5 }}
                     >
-                      <span className="text-sm font-medium">Mulai</span>
+                      <span className="text-sm font-medium">{locked ? 'Upgrade untuk membuka' : 'Mulai'}</span>
                       <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
                     </motion.div>
                   </Link>

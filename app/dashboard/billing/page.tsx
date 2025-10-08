@@ -28,13 +28,12 @@ interface PaymentMethod {
 
 interface PaymentData {
   amount: number
+  plan: string
   referenceId: string
-  qrCode: string
-  bankAccount: {
-    bank: string
-    accountNumber: string
-    accountName: string
-  }
+  qrCodeUrl: string
+  banks: { bank: string; accountNumber: string; accountName: string }[]
+  expiryTime: string
+  status: string
 }
 
 export default function BillingPage() {
@@ -73,10 +72,8 @@ export default function BillingPage() {
   ]
 
   const plans = [
-    { id: 'free', name: 'Free', price: 0, features: ['Dashboard dasar', '5 hektar', 'Laporan bulanan'] },
     { id: 'basic', name: 'Basic', price: 299000, features: ['Dashboard lengkap', '50 hektar', 'Laporan mingguan', 'Analisis data'] },
-    { id: 'premium', name: 'Premium', price: 599000, features: ['Semua fitur Basic', '200 hektar', 'Laporan real-time', 'API access'] },
-    { id: 'enterprise', name: 'Enterprise', price: 0, features: ['Custom solution', 'Unlimited', 'Dedicated support', 'SLA'] }
+    { id: 'premium', name: 'Premium', price: 599000, features: ['Semua fitur Basic', '200 hektar', 'Laporan real-time', 'API access'] }
   ]
 
   const currentPlan = plans.find(plan => plan.id === selectedPlan)
@@ -256,48 +253,22 @@ export default function BillingPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Bank Transfer */}
-              {selectedMethod === 'bank_transfer' && (
+              {selectedMethod === 'bank_transfer' && paymentData && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Transfer Bank</h3>
                   <div className="space-y-4">
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-gray-600">Bank</span>
-                        <button
-                          onClick={() => copyToClipboard(paymentData.bankAccount.bank)}
-                          className="text-primary-600 hover:text-primary-700"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
+                    {paymentData.banks.map((b, idx) => (
+                      <div key={idx} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">{b.bank}</span>
+                          <button onClick={() => copyToClipboard(b.accountNumber)} className="text-primary-600 hover:text-primary-700">
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="font-semibold text-gray-900">{b.accountNumber}</p>
+                        <p className="text-sm text-gray-600">a.n {b.accountName}</p>
                       </div>
-                      <p className="font-semibold text-gray-900">{paymentData.bankAccount.bank}</p>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-gray-600">Nomor Rekening</span>
-                        <button
-                          onClick={() => copyToClipboard(paymentData.bankAccount.accountNumber)}
-                          className="text-primary-600 hover:text-primary-700"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <p className="font-semibold text-gray-900">{paymentData.bankAccount.accountNumber}</p>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-gray-600">Nama Pemilik</span>
-                        <button
-                          onClick={() => copyToClipboard(paymentData.bankAccount.accountName)}
-                          className="text-primary-600 hover:text-primary-700"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <p className="font-semibold text-gray-900">{paymentData.bankAccount.accountName}</p>
-                    </div>
+                    ))}
 
                     <div className="bg-primary-50 rounded-lg p-4">
                       <div className="flex justify-between items-center mb-2">
@@ -318,11 +289,11 @@ export default function BillingPage() {
               )}
 
               {/* QR Code */}
-              {selectedMethod === 'qr_code' && (
+              {selectedMethod === 'qr_code' && paymentData && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">QR Code</h3>
                   <div className="bg-gray-50 rounded-lg p-6 text-center">
-                    <QRCode value={paymentData.qrCode} size={200} />
+                    <QRCode value={paymentData.qrCodeUrl} size={220} />
                     <p className="text-sm text-gray-600 mt-4">
                       Scan QR code di atas untuk melakukan pembayaran
                     </p>

@@ -31,6 +31,7 @@ export default function SignInPage() {
         toast.error('Email atau password salah')
       } else {
         toast.success('Berhasil masuk!')
+        // Gunakan satu halaman dashboard yang mendeteksi paket secara dinamis
         router.push('/dashboard')
       }
     } catch (error) {

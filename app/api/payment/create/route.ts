@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const schema = z.object({
-      plan: z.enum(['free', 'basic', 'premium', 'enterprise']),
+      plan: z.enum(['basic', 'premium']),
       amount: z.number().nonnegative(),
       method: z.string().min(2).max(50),
     })
@@ -42,17 +42,24 @@ export async function POST(request: NextRequest) {
       user: (session.user as any).id
     })
 
-    // Mock payment data with better security
+    // Payment options for Indonesian banks and QR
     const paymentData = {
       amount: amount,
+      plan,
       referenceId: referenceId,
-      qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`,
-      bankAccount: {
-        bank: 'BCA',
-        accountNumber: '1234567890',
-        accountName: 'PT eSawitKu Indonesia',
-        swiftCode: 'CENAIDJA'
-      },
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(qrData)}`,
+      banks: [
+        {
+          bank: 'BRI',
+          accountNumber: '109901070159500',
+          accountName: 'Pemilik Akun',
+        },
+        {
+          bank: 'Mandiri',
+          accountNumber: '1080028325505',
+          accountName: 'Pemilik Akun',
+        }
+      ],
       expiryTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
       status: 'pending'
     }
