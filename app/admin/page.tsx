@@ -28,7 +28,7 @@ export default function AdminDashboard() {
   const [systemLogs, setSystemLogs] = useState([])
 
   useEffect(() => {
-    if (session?.user?.role === 'SUPER_ADMIN') {
+    if ((session?.user as any)?.role === 'SUPER_ADMIN') {
       fetchAdminData()
     }
   }, [session])
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
     )
   }
 
-  if (!session || session.user?.role !== 'SUPER_ADMIN') {
+  if (!session || (session.user as any)?.role !== 'SUPER_ADMIN') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

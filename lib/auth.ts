@@ -56,12 +56,13 @@ export const authOptions: NextAuthOptions = {
             data: { lastLoginAt: new Date() }
           })
 
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-          }
+                  return {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    image: user.image,
+                    role: user.role,
+                  }
         } catch (error) {
           console.error('Auth error:', error)
           return null
@@ -84,12 +85,14 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email
         token.name = user.name
         token.image = user.image
+        token.role = (user as any).role || 'USER'
       }
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id as string
+        (session.user as any).role = token.role as string
         if (token.email) session.user.email = token.email as string
         if (token.name) session.user.name = token.name as string
         if (token.image) session.user.image = token.image as string

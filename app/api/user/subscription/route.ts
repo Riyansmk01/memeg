@@ -20,14 +20,14 @@ export async function GET(request: NextRequest) {
 
     // Get subscription from database
     const subscription = await prisma.subscription.findUnique({
-      where: { userId: (session.user as any).id }
+      where: { userId: (session?.user as any)?.id }
     })
 
     if (!subscription) {
       // Create default free subscription if none exists
       const newSubscription = await prisma.subscription.create({
         data: {
-          userId: (session.user as any).id,
+          userId: (session?.user as any)?.id,
           plan: 'FREE',
           status: 'ACTIVE',
           currentPeriodStart: new Date(),

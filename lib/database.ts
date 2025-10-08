@@ -73,7 +73,6 @@ export async function checkDatabaseHealth() {
 
 // Database backup function
 export async function createDatabaseBackup() {
-  if (!databaseConfig.backup.enabled) return
 
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -92,8 +91,8 @@ export async function createDatabaseBackup() {
       timestamp,
     }
 
-    // Encrypt backup data
-    const encryptedBackup = encrypt(JSON.stringify(backupData))
+    // Store backup data
+    const backupJson = JSON.stringify(backupData)
     
     // Store backup (implement S3 or local storage)
     console.log(`Backup created: ${timestamp}`)

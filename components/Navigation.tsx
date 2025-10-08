@@ -47,7 +47,7 @@ export default function Navigation() {
     { name: 'System Logs', href: '/admin/logs', icon: FileText },
   ]
 
-  const isAdmin = session?.user?.role === 'SUPER_ADMIN' || session?.user?.role === 'ADMIN'
+  const isAdmin = (session?.user as any)?.role === 'SUPER_ADMIN' || (session?.user as any)?.role === 'ADMIN'
 
   return (
     <>

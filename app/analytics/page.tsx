@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
   })
 
   useEffect(() => {
-    if (session?.user?.id) {
+    if ((session?.user as any)?.id) {
       fetchSummary()
     }
   }, [session, selectedPeriod])
@@ -198,13 +198,13 @@ export default function AnalyticsPage() {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <HarvestChart userId={session.user?.id || ''} period={selectedPeriod} />
-          <RevenueChart userId={session.user?.id || ''} period={selectedPeriod} />
+          <HarvestChart userId={(session.user as any)?.id || ''} period={selectedPeriod} />
+          <RevenueChart userId={(session.user as any)?.id || ''} period={selectedPeriod} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <WorkerChart userId={session.user?.id || ''} />
-          <ProductivityChart userId={session.user?.id || ''} />
+          <WorkerChart userId={(session.user as any)?.id || ''} />
+          <ProductivityChart userId={(session.user as any)?.id || ''} />
         </div>
 
         {/* Insights Section */}
