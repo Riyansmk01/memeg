@@ -4,17 +4,7 @@ import GitHubProvider from "next-auth/providers/github"
 import FacebookProvider from "next-auth/providers/facebook"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-
-// Temporary user storage (in production, use database)
-const users: Array<{
-  id: string
-  email: string
-  name: string
-  password: string
-  image?: string
-  createdAt: Date
-  lastLoginAt?: Date
-}> = []
+import { prisma } from "@/lib/database"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -41,30 +31,40 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Find user in temporary storage
-        const user = users.find(u => u.email === credentials.email)
+        try {
+          // Find user in database
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          })
 
-        if (!user) {
+          if (!user || !user.password) {
+            return null
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          )
+
+          if (!isPasswordValid) {
+            return null
+          }
+
+          // Update last login
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() }
+          })
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          }
+        } catch (error) {
+          console.error('Auth error:', error)
           return null
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
-
-        if (!isPasswordValid) {
-          return null
-        }
-
-        // Update last login
-        user.lastLoginAt = new Date()
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
         }
       }
     })
@@ -96,10 +96,15 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
+    async redirect({ url, baseUrl }) {
+      // Redirect to dashboard after successful login
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      else if (new URL(url).origin === baseUrl) return url
+      return `${baseUrl}/dashboard`
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
 }
 
-// Export users array for registration
-export { users }
+// No longer need to export users array since we're using database

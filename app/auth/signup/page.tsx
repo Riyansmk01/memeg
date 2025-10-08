@@ -86,14 +86,16 @@ export default function SignUpPage() {
         }),
       })
 
+      const result = await response.json()
+
       if (response.ok) {
         toast.success('Akun berhasil dibuat! Silakan masuk.')
         router.push('/auth/signin')
       } else {
-        const error = await response.json()
-        toast.error(error.message || 'Terjadi kesalahan saat mendaftar')
+        toast.error(result.message || 'Terjadi kesalahan saat mendaftar')
       }
     } catch (error) {
+      console.error('Registration error:', error)
       toast.error('Terjadi kesalahan saat mendaftar')
     } finally {
       setIsLoading(false)

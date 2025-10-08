@@ -31,8 +31,21 @@ export default function SignInPage() {
         toast.error('Email atau password salah')
       } else {
         toast.success('Berhasil masuk!')
-        // Gunakan satu halaman dashboard yang mendeteksi paket secara dinamis
-        router.push('/dashboard')
+        
+        // Fetch user subscription to determine redirect
+        try {
+          const subscriptionResponse = await fetch('/api/user/subscription')
+          if (subscriptionResponse.ok) {
+            const subscription = await subscriptionResponse.json()
+            const plan = subscription?.plan?.toLowerCase() || 'free'
+            router.push(`/dashboard`)
+          } else {
+            router.push('/dashboard')
+          }
+        } catch (error) {
+          console.error('Error fetching subscription:', error)
+          router.push('/dashboard')
+        }
       }
     } catch (error) {
       toast.error('Terjadi kesalahan saat masuk')

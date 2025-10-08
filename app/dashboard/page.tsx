@@ -165,16 +165,16 @@ export default function DashboardPage() {
   }
 
   const planLimits = {
-    free: { hectares: 5, workers: 3, reports: 'monthly' },
-    basic: { hectares: 50, workers: 15, reports: 'weekly' },
-    premium: { hectares: 200, workers: 50, reports: 'daily' }
+    FREE: { hectares: 5, workers: 3, reports: 'monthly' },
+    BASIC: { hectares: 50, workers: 15, reports: 'weekly' },
+    PREMIUM: { hectares: 200, workers: 50, reports: 'daily' }
   }
 
-  const currentPlan = (subscription?.plan || 'free').toLowerCase()
+  const currentPlan = (subscription?.plan || 'FREE').toUpperCase()
   const limits = planLimits[currentPlan as keyof typeof planLimits]
-  const isFree = currentPlan === 'free'
-  const isBasic = currentPlan === 'basic'
-  const isPremium = currentPlan === 'premium'
+  const isFree = currentPlan === 'FREE'
+  const isBasic = currentPlan === 'BASIC'
+  const isPremium = currentPlan === 'PREMIUM'
 
   const quickActions = [
     {

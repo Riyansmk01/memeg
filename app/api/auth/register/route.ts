@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { users } from '@/lib/auth'
+import { prisma } from '@/lib/database'
+
+export const dynamic = 'force-dynamic'
 
 // Input validation helpers
 const validateEmail = (email: string): boolean => {
@@ -39,10 +41,26 @@ const sanitizeInput = (input: string): string => {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password } = await request.json()
+    console.log('Register API called')
+    
+    // Parse JSON with better error handling
+    let body
+    try {
+      body = await request.json()
+      console.log('Request body:', body)
+    } catch (jsonError) {
+      console.error('JSON parsing error:', jsonError)
+      return NextResponse.json(
+        { message: 'Invalid JSON format' },
+        { status: 400 }
+      )
+    }
+    
+    const { name, email, password } = body
 
     // Validate input
     if (!name || !email || !password) {
+      console.log('Missing fields:', { name: !!name, email: !!email, password: !!password })
       return NextResponse.json(
         { message: 'Semua field harus diisi' },
         { status: 400 }
@@ -80,7 +98,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = users.find(u => u.email === sanitizedEmail)
+    const existingUser = await prisma.user.findUnique({
+      where: { email: sanitizedEmail }
+    })
+    
     if (existingUser) {
       return NextResponse.json(
         { message: 'Email sudah terdaftar' },
@@ -91,20 +112,26 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user
-    const newUser = {
-      id: Date.now().toString(),
-      name: sanitizedName,
-      email: sanitizedEmail,
-      password: hashedPassword,
-      image: undefined,
-      createdAt: new Date(),
-      lastLoginAt: undefined
-    }
+    // Create user in database
+    const newUser = await prisma.user.create({
+      data: {
+        name: sanitizedName,
+        email: sanitizedEmail,
+        password: hashedPassword,
+        image: null,
+        role: 'USER',
+        subscription: {
+          create: {
+            plan: 'FREE',
+            status: 'ACTIVE',
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: null
+          }
+        }
+      }
+    })
 
-    users.push(newUser)
-
-    // Log successful registration (in production, save to database)
+    // Log successful registration
     console.log(`New user registered: ${sanitizedEmail}`)
 
     return NextResponse.json(

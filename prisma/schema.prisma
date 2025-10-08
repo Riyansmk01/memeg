@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // User Management
@@ -17,22 +17,22 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
-  password      String?   @db.Text
-  phoneNumber   String?   @db.Text // Encrypted
-  address       String?   @db.Text // Encrypted
-  personalId    String?   @db.Text // Encrypted (KTP/NIK)
-  bankAccount   String?   @db.Text // Encrypted
-  companyName   String?   @db.Text // Encrypted
-  companyAddress String?  @db.Text // Encrypted
-  taxId         String?   @db.Text // Encrypted (NPWP)
+  password      String?
+  phoneNumber   String?
+  address       String?
+  personalId    String?
+  bankAccount   String?
+  companyName   String?
+  companyAddress String?
+  taxId         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
   isActive      Boolean   @default(true)
-  role          UserRole  @default(USER)
-  status        UserStatus @default(ACTIVE)
-  preferences   Json?     // User preferences as JSON
-  metadata      Json?     // Additional metadata
+  role          String    @default("USER")
+  status        String    @default("ACTIVE")
+  preferences   String?   // JSON as string
+  metadata      String?   // JSON as string
   timezone      String    @default("Asia/Jakarta")
   language      String    @default("id")
   currency      String    @default("IDR")
@@ -67,12 +67,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?  @db.Text
-  access_token      String?  @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?  @db.Text
+  id_token          String?
   session_state     String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -95,7 +95,7 @@ model Session {
   ipAddress    String?
   userAgent    String?
   isActive     Boolean  @default(true)
-  deviceInfo   Json?    // Device information
+  deviceInfo   String?  // JSON as string
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -118,8 +118,8 @@ model VerificationToken {
 model Subscription {
   id                String   @id @default(cuid())
   userId            String   @unique
-  plan              SubscriptionPlan @default(FREE)
-  status            SubscriptionStatus @default(ACTIVE)
+  plan              String   @default("FREE")
+  status            String   @default("ACTIVE")
   currentPeriodStart DateTime @default(now())
   currentPeriodEnd  DateTime?
   cancelAtPeriodEnd Boolean  @default(false)
@@ -127,8 +127,8 @@ model Subscription {
   updatedAt         DateTime @updatedAt
   cancelledAt       DateTime?
   trialEndsAt       DateTime?
-  metadata          Json?    // Additional subscription metadata
-  features          Json?    // Enabled features for this plan
+  metadata          String?  // JSON as string
+  features          String?  // JSON as string
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -143,19 +143,19 @@ model Payment {
   id            String   @id @default(cuid())
   userId        String
   subscriptionId String?
-  amount        Decimal  @db.Decimal(12, 2)
+  amount        Float
   currency      String   @default("IDR")
-  status        PaymentStatus
-  paymentMethod PaymentMethod
+  status        String
+  paymentMethod String
   bankCode      String?
   bankName      String?
   accountNumber String?
   accountName   String?
-  qrCode        String?  @db.Text
+  qrCode        String?
   qrCodeUrl     String?
   referenceId   String   @unique
-  externalId    String?  // External payment gateway ID
-  metadata      Json?    // Additional payment metadata
+  externalId    String?
+  metadata      String?  // JSON as string
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   completedAt   DateTime?
@@ -180,13 +180,13 @@ model Plantation {
   name        String
   description String?
   location    String
-  latitude    Decimal? @db.Decimal(10, 8)
-  longitude   Decimal? @db.Decimal(11, 8)
-  area        Decimal  @db.Decimal(10, 2) // in hectares
+  latitude    Float?
+  longitude   Float?
+  area        Float
   soilType    String?
   plantingDate DateTime?
   expectedHarvest DateTime?
-  status      PlantationStatus @default(ACTIVE)
+  status      String   @default("ACTIVE")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -210,12 +210,12 @@ model Worker {
   email       String?
   phoneNumber String?
   position    String
-  salary      Decimal? @db.Decimal(10, 2)
+  salary      Float?
   startDate   DateTime @default(now())
   endDate     DateTime?
-  status      WorkerStatus @default(ACTIVE)
-  skills      String[] // Array of skills
-  certifications String[] // Array of certifications
+  status      String   @default("ACTIVE")
+  skills      String?  // JSON as string
+  certifications String? // JSON as string
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -235,11 +235,11 @@ model Report {
   userId      String
   plantationId String?
   title       String
-  type        ReportType
-  content     Json     // Report content as JSON
-  data        Json?    // Additional data
-  attachments String[] // File URLs
-  status      ReportStatus @default(DRAFT)
+  type        String
+  content     String   // JSON as string
+  data        String?  // JSON as string
+  attachments String?  // JSON as string
+  status      String   @default("DRAFT")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   publishedAt DateTime?
@@ -263,13 +263,13 @@ model Task {
   workerId    String?
   title       String
   description String?
-  type        TaskType
-  priority    TaskPriority @default(MEDIUM)
-  status      TaskStatus @default(PENDING)
+  type        String
+  priority    String   @default("MEDIUM")
+  status      String   @default("PENDING")
   dueDate     DateTime?
   completedAt DateTime?
-  estimatedHours Decimal? @db.Decimal(5, 2)
-  actualHours   Decimal? @db.Decimal(5, 2)
+  estimatedHours Float?
+  actualHours   Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -302,7 +302,7 @@ model TeamMember {
   id       String   @id @default(cuid())
   teamId   String
   userId   String
-  role     TeamRole @default(MEMBER)
+  role     String   @default("MEMBER")
   joinedAt DateTime @default(now())
 
   team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -320,12 +320,12 @@ model Document {
   userId      String
   title       String
   description String?
-  type        DocumentType
+  type        String
   fileUrl     String
   fileName    String
   fileSize    Int
   mimeType    String
-  tags        String[]
+  tags        String?  // JSON as string
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -344,8 +344,8 @@ model Notification {
   userId    String
   title     String
   message   String
-  type      NotificationType
-  data      Json?    // Additional data
+  type      String
+  data      String?  // JSON as string
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
   readAt    DateTime?
@@ -364,7 +364,7 @@ model ApiKey {
   userId      String
   name        String
   key         String   @unique
-  permissions Json     // Array of permissions
+  permissions String   // JSON as string
   isActive    Boolean  @default(true)
   lastUsedAt  DateTime?
   expiresAt   DateTime?
@@ -382,11 +382,11 @@ model ApiKey {
 model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
-  action    String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc.
-  resource  String   // User, Payment, Subscription, etc.
+  action    String
+  resource  String
   resourceId String?
-  oldValues Json?
-  newValues Json?
+  oldValues String?  // JSON as string
+  newValues String?  // JSON as string
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
@@ -403,10 +403,10 @@ model AuditLog {
 // Analytics Schema
 model Analytics {
   id        String   @id @default(cuid())
-  event     String   // page_view, button_click, form_submit, etc.
+  event     String
   userId    String?
   sessionId String?
-  properties Json?   // Event properties
+  properties String?  // JSON as string
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
@@ -421,152 +421,12 @@ model Analytics {
 model SystemConfig {
   id        String   @id @default(cuid())
   key       String   @unique
-  value     String   @db.Text
-  type      ConfigType @default(STRING)
+  value     String
+  type      String   @default("STRING")
   isPublic  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([key])
   @@map("system_configs")
-}
-
-// Enums
-enum UserRole {
-  USER
-  ADMIN
-  SUPER_ADMIN
-  MANAGER
-  WORKER
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-  PENDING_VERIFICATION
-}
-
-enum SubscriptionPlan {
-  FREE
-  BASIC
-  PREMIUM
-  ENTERPRISE
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
-  SUSPENDED
-  TRIALING
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-  CANCELLED
-  EXPIRED
-}
-
-enum PaymentMethod {
-  BANK_TRANSFER
-  QR_CODE
-  CREDIT_CARD
-  E_WALLET
-  CASH
-}
-
-enum PlantationStatus {
-  ACTIVE
-  INACTIVE
-  MAINTENANCE
-  HARVESTING
-}
-
-enum WorkerStatus {
-  ACTIVE
-  INACTIVE
-  TERMINATED
-  ON_LEAVE
-}
-
-enum ReportType {
-  MONTHLY
-  WEEKLY
-  DAILY
-  HARVEST
-  MAINTENANCE
-  FINANCIAL
-  CUSTOM
-}
-
-enum ReportStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
-enum TaskType {
-  PLANTING
-  HARVESTING
-  MAINTENANCE
-  FERTILIZING
-  PEST_CONTROL
-  IRRIGATION
-  PRUNING
-  OTHER
-}
-
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-enum TaskStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  ON_HOLD
-}
-
-enum TeamRole {
-  OWNER
-  ADMIN
-  MANAGER
-  MEMBER
-  VIEWER
-}
-
-enum DocumentType {
-  REPORT
-  CERTIFICATE
-  CONTRACT
-  INVOICE
-  RECEIPT
-  MANUAL
-  OTHER
-}
-
-enum NotificationType {
-  INFO
-  WARNING
-  ERROR
-  SUCCESS
-  TASK_ASSIGNED
-  PAYMENT_RECEIVED
-  REPORT_READY
-  SYSTEM_UPDATE
-}
-
-enum ConfigType {
-  STRING
-  NUMBER
-  BOOLEAN
-  JSON
 }

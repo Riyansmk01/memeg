@@ -1,6 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { databaseConfig } from './database-config'
-import { encrypt } from './encryption'
 
 // Simple Prisma client for development
 const globalForPrisma = globalThis as unknown as {

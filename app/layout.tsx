@@ -5,6 +5,7 @@ import { Providers } from './providers'
 import { Toaster } from 'react-hot-toast'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { PageTransition } from '@/components/PageTransitions'
+import { Analytics } from '@vercel/analytics/next'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -77,6 +78,7 @@ export default function RootLayout({
             />
           </Providers>
         </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   )
