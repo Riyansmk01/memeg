@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import client from 'prom-client'
 
+export const dynamic = 'force-dynamic'
+
 // Register default metrics once
 const register = client.register
 let defaultMetricsInitialized = false

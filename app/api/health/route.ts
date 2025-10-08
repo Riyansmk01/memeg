@@ -4,6 +4,8 @@ import { checkDatabaseHealth } from '@/lib/database'
 import { checkCacheHealth } from '@/lib/cache'
 import { ApiResponse } from '@/lib/api-middleware'
 
+export const dynamic = 'force-dynamic'
+
 // System health check endpoint
 export async function GET(request: NextRequest) {
   try {
