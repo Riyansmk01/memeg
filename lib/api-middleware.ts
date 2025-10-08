@@ -44,7 +44,7 @@ export async function validateApiKey(request: NextRequest): Promise<{ valid: boo
     return {
       valid: true,
       userId: keyData.userId,
-      permissions: keyData.permissions as string[]
+      permissions: Array.isArray(keyData.permissions) ? (keyData.permissions as unknown as string[]) : (() => { try { return JSON.parse(keyData.permissions as unknown as string) } catch { return [] } })()
     }
   } catch (error) {
     console.error('API key validation error:', error)
@@ -54,14 +54,14 @@ export async function validateApiKey(request: NextRequest): Promise<{ valid: boo
 
 // Rate limiting middleware
 export async function rateLimit(request: NextRequest): Promise<{ allowed: boolean; remaining?: number }> {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+  const ip = (request as any).ip || request.headers.get('x-forwarded-for') || 'unknown'
   const key = `rate_limit:${ip}`
   
   try {
-    const current = await redis.incr(key)
+    const current = await (redis as any).incr(key)
     
     if (current === 1) {
-      await redis.expire(key, Math.floor(rateLimitConfig.windowMs / 1000))
+      await (redis as any).expire(key, Math.floor(rateLimitConfig.windowMs / 1000))
     }
     
     const remaining = Math.max(0, rateLimitConfig.maxRequests - current)
@@ -101,7 +101,7 @@ export async function authenticateRequest(request: NextRequest): Promise<{ authe
   const session = await getServerSession(authOptions)
   if (session?.user) {
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: (session.user as any).id },
       select: {
         id: true,
         name: true,
@@ -116,7 +116,7 @@ export async function authenticateRequest(request: NextRequest): Promise<{ authe
     }
   }
 
-  return { authenticated: false }
+  return { authenticated: false, method: 'session' }
 }
 
 // Permission checking
@@ -204,7 +204,7 @@ export async function logRequest(request: NextRequest, response: NextResponse, u
       data: {
         event: 'api_request',
         userId,
-        properties: logData,
+        properties: JSON.stringify(logData),
         ipAddress: logData.ip,
         userAgent: logData.userAgent,
       }
@@ -257,12 +257,12 @@ export function withApiAuth(
 
       // Audit logging
       if (options.auditLog !== false) {
-        await createAuditLog({
+    await createAuditLog({
           userId: authResult.user.id,
           action: `${request.method} ${request.url}`,
           resource: 'API',
-          ipAddress: request.ip || request.headers.get('x-forwarded-for'),
-          userAgent: request.headers.get('user-agent'),
+          ipAddress: ((request as any).ip || request.headers.get('x-forwarded-for') || undefined) as string | undefined,
+          userAgent: (request.headers.get('user-agent') || undefined) as string | undefined,
         })
       }
 

@@ -79,9 +79,9 @@ export default function SettingsPage() {
       setSettings(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof typeof prev],
+          ...(prev as any)[parent],
           [child]: value
-        }
+        } as any
       }))
     } else {
       setSettings(prev => ({

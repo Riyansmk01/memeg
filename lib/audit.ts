@@ -47,8 +47,8 @@ export async function auditUserAction(
     resourceId,
     oldValues,
     newValues,
-    ipAddress: request?.headers.get('x-forwarded-for') || request?.headers.get('x-real-ip'),
-    userAgent: request?.headers.get('user-agent'),
+    ipAddress: (request?.headers.get('x-forwarded-for') || request?.headers.get('x-real-ip') || undefined) as string | undefined,
+    userAgent: (request?.headers.get('user-agent') || undefined) as string | undefined,
   })
 }
 
@@ -85,7 +85,8 @@ export async function deleteUserData(userId: string) {
     return { success: true }
   } catch (error) {
     console.error('User data deletion failed:', error)
-    return { success: false, error: error.message }
+    const message = (error as any)?.message || 'Unknown error'
+    return { success: false, error: message }
   }
 }
 
@@ -136,7 +137,8 @@ export async function anonymizeUserData(userId: string) {
     return { success: true }
   } catch (error) {
     console.error('User data anonymization failed:', error)
-    return { success: false, error: error.message }
+    const message = (error as any)?.message || 'Unknown error'
+    return { success: false, error: message }
   }
 }
 

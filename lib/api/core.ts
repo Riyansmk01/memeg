@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import { prisma } from '@/lib/database/manager'
-import { redis } from '@/lib/database/manager'
+import { ENV } from '@/lib/env'
+import { prisma } from '@/lib/database'
+import { redis } from '@/lib/database'
 import { z } from 'zod'
 
 // API Configuration
 const API_CONFIG = {
-  jwtSecret: process.env.JWT_SECRET || 'esawitku-jwt-secret-2024',
+  jwtSecret: ENV.JWT_SECRET,
   jwtExpiresIn: '24h',
   rateLimitWindow: 15 * 60 * 1000, // 15 minutes
   rateLimitMax: 100, // requests per window
@@ -49,20 +50,20 @@ export class APIAuthentication {
 
   // JWT Token Generation
   generateToken(payload: any): string {
-    return jwt.sign(payload, API_CONFIG.jwtSecret, {
+    return jwt.sign(payload, API_CONFIG.jwtSecret as string, {
       expiresIn: API_CONFIG.jwtExpiresIn,
       issuer: 'esawitku-api',
       audience: 'esawitku-client'
-    })
+    } as jwt.SignOptions)
   }
 
   // JWT Token Verification
   verifyToken(token: string): any {
     try {
-      return jwt.verify(token, API_CONFIG.jwtSecret, {
+      return jwt.verify(token, API_CONFIG.jwtSecret as string, {
         issuer: 'esawitku-api',
         audience: 'esawitku-client'
-      })
+      } as jwt.VerifyOptions)
     } catch (error) {
       throw new Error('Invalid token')
     }
@@ -77,7 +78,7 @@ export class APIAuthentication {
         userId,
         name,
         key: apiKey,
-        permissions: permissions,
+        permissions: JSON.stringify(permissions) as unknown as any,
         isActive: true,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
       }
@@ -200,26 +201,21 @@ export class APIResponse {
 // API Logging
 export class APILogger {
   static async logRequest(request: NextRequest, response: NextResponse, userId?: string): Promise<void> {
+    const startHeader = request.headers.get('x-start-time')
+    const startMs = startHeader ? Number(startHeader) : undefined
     const logData = {
       method: request.method,
       url: request.url,
       userAgent: request.headers.get('user-agent'),
-      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined,
       userId,
       statusCode: response.status,
       timestamp: new Date(),
-      responseTime: Date.now() - request.headers.get('x-start-time') || 0
+      responseTime: startMs ? Date.now() - startMs : 0
     }
 
     // Log to MongoDB
-    try {
-      const mongoCollection = await prisma.$runCommandRaw({
-        insert: 'api_logs',
-        documents: [logData]
-      })
-    } catch (error) {
-      console.error('Failed to log API request:', error)
-    }
+    // Persisting to Mongo is disabled in this environment
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {

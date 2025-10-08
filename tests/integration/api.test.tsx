@@ -218,7 +218,7 @@ describe('eSawitKu Integration Tests', () => {
         await prisma.user.findUnique({
           where: { id: 'test-user-id' },
         })
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).toBe('Database connection failed')
       }
     })
@@ -230,7 +230,7 @@ describe('eSawitKu Integration Tests', () => {
 
       try {
         await redis.get('test-key')
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).toBe('Redis connection failed')
       }
     })
@@ -275,3 +275,5 @@ describe('eSawitKu Integration Tests', () => {
     })
   })
 })
+
+

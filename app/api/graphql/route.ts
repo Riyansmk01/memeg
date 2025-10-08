@@ -1,7 +1,7 @@
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateNextHandler } from '@as-integrations/next'
 import { makeExecutableSchema } from '@graphql-tools/schema'
-import { prisma } from '@/lib/database/manager'
+import { prisma } from '@/lib/prisma'
 import { apiAuth } from '@/lib/api/core'
 import { GraphQLError } from 'graphql'
 
@@ -920,16 +920,16 @@ const schema = makeExecutableSchema({
 // Create Apollo Server
 const server = new ApolloServer({
   schema,
-  context,
   introspection: process.env.NODE_ENV === 'development',
   plugins: [
     {
-      requestDidStart() {
+      async requestDidStart() {
         return {
-          willSendResponse(requestContext: any) {
-            // Log GraphQL requests
-            console.log('GraphQL Query:', requestContext.request.query)
-            console.log('GraphQL Variables:', requestContext.request.variables)
+          async willSendResponse(requestContext: any) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('GraphQL Query:', requestContext.request.query)
+              console.log('GraphQL Variables:', requestContext.request.variables)
+            }
           }
         }
       }

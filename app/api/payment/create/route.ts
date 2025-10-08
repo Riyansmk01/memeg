@@ -1,42 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { rateLimit } from '@/lib/api-middleware'
+import { z } from 'zod'
 import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = await rateLimit(request)
+    if (!rl.allowed) {
+      return NextResponse.json({ message: 'Too many requests' }, { status: 429 })
+    }
     const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    if (!session) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+    }
+    if (!((session?.user as any)?.id)) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 
-    const { plan, amount, method } = await request.json()
+    const body = await request.json()
+    const schema = z.object({
+      plan: z.enum(['free', 'basic', 'premium', 'enterprise']),
+      amount: z.number().nonnegative(),
+      method: z.string().min(2).max(50),
+    })
+    const { plan, amount, method } = schema.parse(body)
 
-    // Validate input
-    if (!plan || !amount || !method) {
-      return NextResponse.json(
-        { message: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
-
-    // Validate plan
-    const validPlans = ['free', 'basic', 'premium', 'enterprise']
-    if (!validPlans.includes(plan)) {
-      return NextResponse.json(
-        { message: 'Invalid plan' },
-        { status: 400 }
-      )
-    }
-
-    // Validate amount
-    if (amount < 0) {
-      return NextResponse.json(
-        { message: 'Invalid amount' },
-        { status: 400 }
-      )
-    }
+    // input tervalidasi oleh zod
 
     // Generate secure reference ID
     const timestamp = Date.now()
@@ -48,7 +39,7 @@ export async function POST(request: NextRequest) {
       ref: referenceId,
       amount: amount,
       timestamp: timestamp,
-      user: session.user.id
+      user: (session.user as any).id
     })
 
     // Mock payment data with better security
@@ -67,14 +58,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Log payment creation (in production, save to database)
-    console.log(`Payment created for user ${session.user.id}: ${referenceId}`)
+    console.log(`Payment created for user ${(session.user as any).id}: ${referenceId}`)
 
     return NextResponse.json(paymentData)
   } catch (error) {
     console.error('Error creating payment:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    )
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ message: 'Validation error', issues: error.flatten() }, { status: 400 })
+    }
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }

@@ -49,9 +49,9 @@ export class CacheService {
 
   static async delPattern(pattern: string): Promise<void> {
     try {
-      const keys = await redis.keys(pattern)
-      if (keys.length > 0) {
-        await redis.del(...keys)
+      const keys = await (redis as any).keys(pattern)
+      if ((keys as string[]).length > 0) {
+        await (redis as any).del(...(keys as string[]))
       }
     } catch (error) {
       console.error('Cache delete pattern error:', error)
@@ -106,9 +106,9 @@ export class UserCache {
         prisma.user.findUnique({ where: { id: userId } }).then(u => u ? 25 : 0), // Mock data
         prisma.user.findUnique({ where: { id: userId } }).then(u => u ? 12 : 0), // Mock data
         prisma.payment.aggregate({
-          where: { userId, status: 'completed' },
+          where: { userId, status: 'COMPLETED' },
           _sum: { amount: true }
-        }).then(result => Number(result._sum.amount) || 0),
+        }).then(result => Number(result._sum?.amount ?? 0)),
         Promise.resolve(87) // Mock data
       ])
       
@@ -176,7 +176,7 @@ export class AnalyticsCache {
         }),
         prisma.payment.count({
           where: {
-            status: 'completed',
+            status: 'COMPLETED',
             createdAt: { gte: startOfDay, lte: endOfDay }
           }
         })
@@ -218,8 +218,8 @@ export class ConfigCache {
   static async setConfig(key: string, value: string, type: string = 'string', isPublic: boolean = false) {
     const config = await prisma.systemConfig.upsert({
       where: { key },
-      update: { value, type, isPublic },
-      create: { key, value, type, isPublic }
+      update: { value, isPublic },
+      create: { key, value, isPublic }
     })
     
     // Invalidate cache
@@ -279,6 +279,7 @@ export async function checkCacheHealth() {
     const pong = await redis.ping()
     return { status: 'healthy', response: pong }
   } catch (error) {
-    return { status: 'unhealthy', error: error.message }
+    const message = (error as any)?.message || 'Unknown error'
+    return { status: 'unhealthy', error: message }
   }
 }

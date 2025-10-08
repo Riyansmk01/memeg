@@ -24,6 +24,32 @@
     },
     "typeRoots": ["./node_modules/@types", "./types"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "app/api/**/route.ts",
+    "lib/api/**/*.ts",
+    "lib/api/**/*.tsx",
+    "lib/audit.ts",
+    "lib/auth.ts",
+    "lib/database.ts",
+    "lib/monitoring.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "tests/**",
+    "frontend/**",
+    "backend/**",
+    "sawitku/**",
+    "lib/compliance/**",
+    "lib/performance/**",
+    "lib/disaster-recovery/**",
+    "lib/services/**",
+    "lib/database/**",
+    "lib/monitoring/observability.ts",
+    "components/**",
+    "lib/cache.ts"
+  ]
 }

@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-// import Redis from 'ioredis'
-// import { MongoClient } from 'mongodb'
-// import { databaseConfig, encryptionConfig } from './database-config'
-// import { encrypt, decrypt } from './encryption'
+import { databaseConfig } from './database-config'
+import { encrypt } from './encryption'
 
 // Simple Prisma client for development
 const globalForPrisma = globalThis as unknown as {
@@ -21,8 +19,11 @@ export const redis = {
   set: async (key: string, value: string) => 'OK',
   setex: async (key: string, ttl: number, value: string) => 'OK',
   del: async (key: string) => 1,
+  keys: async (pattern: string) => [] as string[],
   exists: async (key: string) => 0,
   ping: async () => 'PONG',
+  incr: async (key: string) => 1,
+  expire: async (key: string, seconds: number) => 1,
   quit: async () => 'OK',
 }
 
@@ -102,7 +103,8 @@ export async function createDatabaseBackup() {
     return { success: true, timestamp }
   } catch (error) {
     console.error('Backup failed:', error)
-    return { success: false, error: error.message }
+    const message = (error as any)?.message || 'Unknown error'
+    return { success: false, error: message }
   }
 }
 
@@ -125,7 +127,8 @@ export async function optimizeDatabase() {
     return { success: true }
   } catch (error) {
     console.error('Database optimization failed:', error)
-    return { success: false, error: error.message }
+    const message = (error as any)?.message || 'Unknown error'
+    return { success: false, error: message }
   }
 }
 
@@ -134,7 +137,6 @@ export async function closeDatabaseConnections() {
   try {
     await prisma.$disconnect()
     await redis.quit()
-    await mongoClient.close()
     console.log('Database connections closed')
   } catch (error) {
     console.error('Error closing database connections:', error)

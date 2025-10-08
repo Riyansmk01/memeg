@@ -18,7 +18,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Eye,
-  Download
+  Download,
+  Leaf,
+  Calendar
 } from 'lucide-react'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
@@ -56,7 +58,7 @@ export default function DashboardPage() {
       return
     }
 
-    if (session?.user?.id) {
+    if ((session?.user as any)?.id) {
       fetchUserData()
     }
   }, [session, status, router])
@@ -131,7 +133,7 @@ export default function DashboardPage() {
 
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen animated-bg flex items-center justify-center">
+      <div className="min-h-screen animated-bg flex items-center justify-center" role="status" aria-busy="true" aria-live="polite">
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -139,18 +141,20 @@ export default function DashboardPage() {
           className="text-center"
         >
           <motion.div
+            aria-hidden="true"
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4"
+            transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-3"
           />
           <motion.h2
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-xl font-semibold text-gray-700"
+            className="text-base font-semibold text-gray-700"
           >
             Memuat Dashboard...
           </motion.h2>
+          <span className="sr-only">Sedang memuat konten dashboard</span>
         </motion.div>
       </div>
     )
@@ -236,6 +240,7 @@ export default function DashboardPage() {
             >
               <motion.div 
                 className="w-10 h-10 bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl flex items-center justify-center"
+                aria-hidden="true"
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               >
@@ -248,38 +253,40 @@ export default function DashboardPage() {
             </motion.div>
 
             <div className="flex items-center space-x-4">
-              <motion.div
+              <motion.button
+                type="button"
+                aria-label="Buka notifikasi"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative"
+                className="relative focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md"
               >
-                <Bell className="w-6 h-6 text-gray-600 cursor-pointer" />
+                <Bell className="w-6 h-6 text-gray-600" aria-hidden="true" />
                 <motion.div
                   className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
-              </motion.div>
+              </motion.button>
               
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 className="flex items-center space-x-2"
               >
                 <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-bold">
-                    {session.user.name?.charAt(0) || 'U'}
-                  </span>
+                  <span className="text-white text-sm font-bold">{session.user?.name?.charAt(0) || 'U'}</span>
                 </div>
-                <span className="text-gray-700 font-medium">{session.user.name}</span>
+                <span className="text-gray-700 font-medium">{session.user?.name}</span>
               </motion.div>
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                type="button"
+                aria-label="Keluar dari akun"
                 onClick={handleSignOut}
-                className="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors duration-200"
+                className="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-md"
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-5 h-5" aria-hidden="true" />
                 <span>Keluar</span>
               </motion.button>
             </div>
@@ -297,7 +304,7 @@ export default function DashboardPage() {
         >
           <motion.div variants={itemVariants} className="mb-6">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Selamat datang kembali, {session.user.name}! 👋
+              Selamat datang kembali, {session.user?.name}! 👋
             </h2>
             <p className="text-gray-600">
               Berikut adalah ringkasan aktivitas perkebunan Anda hari ini
@@ -324,9 +331,9 @@ export default function DashboardPage() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <Link href="/dashboard/billing" className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                <Link href="/dashboard/billing" aria-label="Buka halaman upgrade paket" className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                   Upgrade
-                  <ArrowUpRight className="w-4 h-4 ml-2" />
+                  <ArrowUpRight className="w-4 h-4 ml-2" aria-hidden="true" />
                 </Link>
               </motion.div>
             </div>
@@ -398,7 +405,7 @@ export default function DashboardPage() {
                     }}
                     transition={{ duration: 2, repeat: Infinity, delay: stat.delay }}
                   >
-                    <Icon className="w-6 h-6 text-white" />
+                    <Icon className="w-6 h-6 text-white" aria-hidden="true" />
                   </motion.div>
                   <motion.div
                     className={`flex items-center text-sm font-medium ${
@@ -407,11 +414,12 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: stat.delay + 0.3 }}
+                    aria-label={`Perubahan ${stat.title} ${stat.change}`}
                   >
                     {stat.changeType === 'positive' ? (
-                      <ArrowUpRight className="w-4 h-4 mr-1" />
+                      <ArrowUpRight className="w-4 h-4 mr-1" aria-hidden="true" />
                     ) : (
-                      <ArrowDownRight className="w-4 h-4 mr-1" />
+                      <ArrowDownRight className="w-4 h-4 mr-1" aria-hidden="true" />
                     )}
                     {stat.change}
                   </motion.div>
@@ -445,13 +453,13 @@ export default function DashboardPage() {
                   whileHover="hover"
                   className="card group cursor-pointer"
                 >
-                  <Link href={action.href} className="block">
+                  <Link href={action.href} aria-label={`Buka ${action.title}`} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md">
                     <motion.div
                       className={`w-16 h-16 bg-gradient-to-r ${action.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}
                       animate={{ rotate: [0, 5, -5, 0] }}
                       transition={{ duration: 3, repeat: Infinity, delay: action.delay }}
                     >
-                      <Icon className="w-8 h-8 text-white" />
+                      <Icon className="w-8 h-8 text-white" aria-hidden="true" />
                     </motion.div>
                     <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors duration-300">
                       {action.title}
@@ -463,7 +471,7 @@ export default function DashboardPage() {
                       whileHover={{ x: 5 }}
                     >
                       <span className="text-sm font-medium">Mulai</span>
-                      <ChevronRight className="w-4 h-4 ml-1" />
+                      <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
                     </motion.div>
                   </Link>
                 </motion.div>
@@ -498,7 +506,7 @@ export default function DashboardPage() {
                       className={`w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center ${activity.color}`}
                       whileHover={{ scale: 1.1 }}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-5 h-5" aria-hidden="true" />
                     </motion.div>
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{activity.action}</p>
@@ -507,9 +515,11 @@ export default function DashboardPage() {
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
+                      type="button"
+                      aria-label="Lihat detail aktivitas"
                       className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
                     >
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-5 h-5" aria-hidden="true" />
                     </motion.button>
                   </motion.div>
                 )
@@ -532,19 +542,17 @@ export default function DashboardPage() {
             variants={itemVariants}
             className="card p-8 text-center"
           >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4"
-            />
+            <motion.div aria-hidden="true" animate={{ rotate: 360 }} transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }} className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4" />
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Chart Performa</h4>
             <p className="text-gray-600 mb-4">Visualisasi data performa kebun akan ditampilkan di sini</p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              type="button"
+              aria-label="Unduh laporan performa"
               className="btn-primary flex items-center mx-auto"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-4 h-4 mr-2" aria-hidden="true" />
               Unduh Laporan
             </motion.button>
           </motion.div>

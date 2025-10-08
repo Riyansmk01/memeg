@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { rateLimit } from '@/lib/api-middleware'
 
 export async function GET(request: NextRequest) {
   try {
+    const rl = await rateLimit(request)
+    if (!rl.allowed) {
+      return NextResponse.json({ message: 'Too many requests' }, { status: 429 })
+    }
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!((session?.user as any)?.id)) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
 

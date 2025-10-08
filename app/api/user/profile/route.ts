@@ -2,19 +2,35 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { rateLimit } from '@/lib/api-middleware'
+import { z } from 'zod'
 
 export async function PUT(request: NextRequest) {
   try {
+    const rl = await rateLimit(request)
+    if (!rl.allowed) {
+      return NextResponse.json({ message: 'Too many requests' }, { status: 429 })
+    }
     const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.id) {
+    if (!session) {
+      return NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    if (!((session?.user as any)?.id)) {
       return NextResponse.json(
         { message: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const { name, email } = await request.json()
+    const body = await request.json()
+    const schema = z.object({
+      name: z.string().min(2).max(100),
+      email: z.string().email()
+    })
+    const { name, email } = schema.parse(body)
 
     if (!name || !email) {
       return NextResponse.json(
@@ -27,7 +43,7 @@ export async function PUT(request: NextRequest) {
     const existingUser = await prisma.user.findFirst({
       where: {
         email: email,
-        id: { not: session.user.id }
+        id: { not: (session.user as any).id }
       }
     })
 
@@ -39,7 +55,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: (session.user as any).id },
       data: {
         name,
         email,
@@ -57,9 +73,9 @@ export async function PUT(request: NextRequest) {
     })
   } catch (error) {
     console.error('Profile update error:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    )
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ message: 'Validation error', issues: error.flatten() }, { status: 400 })
+    }
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }

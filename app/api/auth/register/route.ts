@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       name: sanitizedName,
       email: sanitizedEmail,
       password: hashedPassword,
-      image: null,
+      image: undefined,
       createdAt: new Date(),
       lastLoginAt: undefined
     }

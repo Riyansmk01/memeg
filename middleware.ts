@@ -13,13 +13,26 @@ export function middleware(request: NextRequest) {
   // XSS protection
   response.headers.set('X-XSS-Protection', '1; mode=block')
   
+  // Cross-Origin Policies
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-site')
+  response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+  
   // Referrer policy
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   
   // Content Security Policy
+  const isDev = process.env.NODE_ENV !== 'production'
+  const scriptSrc = isDev ? "'self' 'unsafe-eval' 'unsafe-inline'" : "'self' 'unsafe-inline'"
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.qrserver.com;"
+    `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.qrserver.com; frame-ancestors 'none'; base-uri 'self';`
+  )
+  
+  // Permissions Policy
+  response.headers.set(
+    'Permissions-Policy',
+    'geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()'
   )
   
   // HSTS (only in production)

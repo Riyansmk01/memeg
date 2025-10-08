@@ -1,31 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AppMonitor, MetricsCollector } from '@/lib/monitoring'
-import { ApiResponse } from '@/lib/api-middleware'
+import client from 'prom-client'
 
-// Metrics endpoint for monitoring
-export async function GET(request: NextRequest) {
+// Register default metrics once
+const register = client.register
+let defaultMetricsInitialized = false
+
+function initDefaultMetrics() {
+  if (!defaultMetricsInitialized) {
+    client.collectDefaultMetrics({ register, prefix: 'esawitku_' })
+    defaultMetricsInitialized = true
+  }
+}
+
+export async function GET(_request: NextRequest) {
   try {
-    MetricsCollector.startTimer('metrics_api')
-    
-    const [performanceMetrics, resourceUsage] = await Promise.all([
-      AppMonitor.getPerformanceMetrics(),
-      AppMonitor.getResourceUsage()
-    ])
-    
-    const metrics = {
-      performance: performanceMetrics,
-      resources: resourceUsage,
-      custom: MetricsCollector.getMetrics(),
-      timestamp: new Date().toISOString()
-    }
-    
-    MetricsCollector.endTimer('metrics_api')
-    MetricsCollector.increment('api_metrics_success')
-    
-    return ApiResponse.success(metrics, 'Metrics retrieved successfully')
+    initDefaultMetrics()
+    const metrics = await register.metrics()
+    return new NextResponse(metrics, {
+      status: 200,
+      headers: {
+        'Content-Type': register.contentType,
+        'Cache-Control': 'no-store',
+      },
+    })
   } catch (error) {
-    MetricsCollector.increment('api_metrics_error')
-    console.error('Metrics API error:', error)
-    return ApiResponse.serverError('Failed to retrieve metrics')
+    return NextResponse.json({ message: 'Metrics generation failed' }, { status: 500 })
   }
 }
