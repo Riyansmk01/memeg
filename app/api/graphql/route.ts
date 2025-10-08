@@ -1,5 +1,6 @@
 import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateNextHandler } from '@as-integrations/next'
+import { NextRequest } from 'next/server'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { prisma } from '@/lib/prisma'
 import { apiAuth } from '@/lib/api/core'
@@ -937,7 +938,13 @@ const server = new ApolloServer({
   ]
 })
 
-// Export handler
-export default startServerAndCreateNextHandler(server, {
-  context
-})
+// Create a Next-compatible handler and expose per-method handlers
+const nextHandler = startServerAndCreateNextHandler(server, { context })
+
+export async function POST(req: NextRequest) {
+  return nextHandler(req)
+}
+
+export async function GET(req: NextRequest) {
+  return nextHandler(req)
+}
